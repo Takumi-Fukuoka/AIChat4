@@ -421,6 +421,40 @@ const Main: FC<IMainProps> = () => {
       async onCompleted(hasError?: boolean) {
         if (hasError)
           return
+
+        if (getConversationIdChangeBecauseOfNew()) {
+          let allConversations: any[] = []
+
+          try {
+            const { data }: any = await fetchConversations()
+
+            if (!data || !Array.isArray(data)) {
+              throw new Error("fetchConversations() から配列が返されませんでした")
+            }
+
+            allConversations = data
+          } catch (error) {
+            console.error("会話の取得に失敗しました:", error)
+
+            allConversations = [{
+              id: "dummy-" + Date.now(),
+              name: "新しい会話（仮）",
+              created_at: Math.floor(Date.now() / 1000),
+              updated_at: Math.floor(Date.now() / 1000),
+              inputs: {},
+              introduction: "これはダミーの会話です。データ取得に失敗したため、仮の会話を表示しています。",
+              status: "normal"
+            }]
+          }
+
+          const newItem: any = await generationConversationName(allConversations[0].id)
+
+          const newAllConversations = produce(allConversations, (draft: any) => {
+            draft[0].name = newItem.name
+          })
+
+          setConversationList(newAllConversations as any)
+        }
         setConversationIdChangeBecauseOfNew(false)
         resetNewConversationInputs()
         setChatNotStarted()
