@@ -423,17 +423,8 @@ const Main: FC<IMainProps> = () => {
           return
 
         if (getConversationIdChangeBecauseOfNew()) {
-          const { data: allConversations123 }: any = await fetchConversations()
-
-          let allConversations = [{
-            id: "dummy-" + Date.now(),
-            name: "新しい会話",
-            created_at: 1743764010,
-            updated_at: 1743764010,
-            inputs: {},
-            introduction: "これはダミーの会話です。",
-            status: "normal"
-          }]
+          const { data: allConversations }: any = await fetchConversations()
+          console.log(allConversations[0].id)
           const newItem: any = await generationConversationName(allConversations[0].id)
 
           const newAllConversations = produce(allConversations, (draft: any) => {
