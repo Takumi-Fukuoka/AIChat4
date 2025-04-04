@@ -423,37 +423,22 @@ const Main: FC<IMainProps> = () => {
           return
 
         if (getConversationIdChangeBecauseOfNew()) {
-          let allConversations: any[] = []
+          const { data: allConversations123 }: any = await fetchConversations()
 
-          try {
-            const result: any = await fetchConversations()
-            console.log("fetchConversations の結果:", result)
-
-            if (!result || !result.data || !Array.isArray(result.data)) {
-              throw new Error("fetchConversations() の戻り値が不正です")
-            }
-
-            allConversations = result.data
-          } catch (error) {
-            console.error("会話の取得に失敗しました:", error)
-
-            allConversations = [{
-              id: "dummy-" + Date.now(),
-              name: "新しい会話（仮）",
-              created_at: Math.floor(Date.now() / 1000),
-              updated_at: Math.floor(Date.now() / 1000),
-              inputs: {},
-              introduction: "これはダミーの会話です。",
-              status: "normal"
-            }]
-          }
-
+          let allConversations = [{
+            id: "dummy-" + Date.now(),
+            name: "新しい会話",
+            created_at: 1743764010,
+            updated_at: 1743764010,
+            inputs: {},
+            introduction: "これはダミーの会話です。",
+            status: "normal"
+          }]
           const newItem: any = await generationConversationName(allConversations[0].id)
 
           const newAllConversations = produce(allConversations, (draft: any) => {
             draft[0].name = newItem.name
           })
-
           setConversationList(newAllConversations as any)
         }
         setConversationIdChangeBecauseOfNew(false)
