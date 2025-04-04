@@ -437,7 +437,7 @@ const Main: FC<IMainProps> = () => {
             console.error("会話の取得に失敗しました:", error)
 
             allConversations = [{
-              id: "dummy-" + Date.now(),
+              id: "ba8bff4c-64d5-4c46-9946-dd9528aac707",
               name: "新しい会話（仮）",
               created_at: Math.floor(Date.now() / 1000),
               updated_at: Math.floor(Date.now() / 1000),
