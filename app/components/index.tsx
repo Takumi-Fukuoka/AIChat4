@@ -426,23 +426,24 @@ const Main: FC<IMainProps> = () => {
           let allConversations: any[] = []
 
           try {
-            const { data }: any = await fetchConversations()
+            const result: any = await fetchConversations()
+            console.log("fetchConversations の結果:", result)
 
-            if (!data || !Array.isArray(data)) {
-              throw new Error("fetchConversations() から配列が返されませんでした")
+            if (!result || !result.data || !Array.isArray(result.data)) {
+              throw new Error("fetchConversations() の戻り値が不正です")
             }
 
-            allConversations = data
+            allConversations = result.data
           } catch (error) {
             console.error("会話の取得に失敗しました:", error)
 
             allConversations = [{
-              id: "ba8bff4c-64d5-4c46-9946-dd9528aac707",
+              id: "dummy-" + Date.now(),
               name: "新しい会話（仮）",
               created_at: Math.floor(Date.now() / 1000),
               updated_at: Math.floor(Date.now() / 1000),
               inputs: {},
-              introduction: "これはダミーの会話です。データ取得に失敗したため、仮の会話を表示しています。",
+              introduction: "これはダミーの会話です。",
               status: "normal"
             }]
           }
