@@ -167,10 +167,6 @@ const Main: FC<IMainProps> = () => {
     // trigger handleConversationSwitch
     setCurrConversationId(id, APP_ID)
     hideSidebar()
-
-    setTimeout(() => {
-      handleConversationSwitch()
-    }, 0)
   }
 
   /*
@@ -423,20 +419,8 @@ const Main: FC<IMainProps> = () => {
         })
       },
       async onCompleted(hasError?: boolean) {
-        console.log('[DEBUG] onCompleted called. Error:', hasError)
         if (hasError)
           return
-
-        if (getConversationIdChangeBecauseOfNew()) {
-          const { data: allConversations }: any = await fetchConversations()
-          console.log('[DEBUG] fetchConversations result:', allConversations)
-          const newItem: any = await generationConversationName(allConversations[0].id)
-
-          const newAllConversations = produce(allConversations, (draft: any) => {
-            draft[0].name = newItem.name
-          })
-          setConversationList(newAllConversations as any)
-        }
         setConversationIdChangeBecauseOfNew(false)
         resetNewConversationInputs()
         setChatNotStarted()
@@ -649,7 +633,7 @@ const Main: FC<IMainProps> = () => {
           {renderSidebar()}
           {
             hasSetInputs && (
-              <div className='relative grow max-w-full mobile:w-full pb-[66px] mx-auto mb-3.5 overflow-hidden'>
+              <div className='relative grow h-[200px] pc:w-[794px] max-w-full mobile:w-full pb-[66px] mx-auto mb-3.5 overflow-hidden'>
                 <div className='h-full overflow-y-auto' ref={chatListDomRef}>
                   <Chat
                     chatList={chatList}
