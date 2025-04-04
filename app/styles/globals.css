@@ -11,6 +11,10 @@
   line-height: 2rem;
 }
 
+textarea.text-sm {
+  font-size: 18px !important;
+}
+
 :root {
   --max-width: 1100px;
   --border-radius: 12px;
@@ -80,6 +84,10 @@
   box-sizing: border-box;
   padding: 0;
   margin: 0;
+}
+
+textarea.text-sm {
+  font-size: 18px !important;
 }
 
 html,
