@@ -424,7 +424,6 @@ const Main: FC<IMainProps> = () => {
       },
       async onCompleted(hasError?: boolean) {
         console.log('[DEBUG] onCompleted called. Error:', hasError)
-        setRespondingFalse()
         if (hasError)
           return
 
