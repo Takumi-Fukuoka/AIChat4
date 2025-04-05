@@ -262,6 +262,7 @@ const baseFetch = (url: string, fetchOptions: any, { needAllResponseContent }: I
 
   const urlPrefix = API_PREFIX
   const token = window.difyChatbotConfig?.token
+  console.log("test:::" + token)
   const headers = new Headers(fetchOptions.headers || {})
   headers.set('Content-Type', ContentType.json)
   if (token) {
