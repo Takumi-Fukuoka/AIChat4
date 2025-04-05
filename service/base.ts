@@ -248,23 +248,38 @@ const handleStream = (
   read()
 }
 
-const baseFetch = (url: string, fetchOptions: any, { needAllResponseContent }: IOtherOptions) => {
-  const options = Object.assign({}, baseOptions, fetchOptions)
+const baseFetch = (
+  url: string,
+  fetchOptions: any,
+  { needAllResponseContent }: IOtherOptions
+) => {
+  const token = window.difyChatbotConfig?.token
+
+  // ヘッダーを構築
+  const headers = new Headers(fetchOptions.headers || {})
+  headers.set('Content-Type', ContentType.json)
+
+  // Authorization ヘッダーを動的に追加
+  if (token) {
+    headers.set('Authorization', `Bearer ${token}`)
+  }
+
+  const options = Object.assign({}, baseOptions, fetchOptions, { headers })
 
   const urlPrefix = API_PREFIX
-
   let urlWithPrefix = `${urlPrefix}${url.startsWith('/') ? url : `/${url}`}`
 
   const { method, params, body } = options
-  // handle query
+
+  // GETパラメータをURLに付加
   if (method === 'GET' && params) {
     const paramsArray: string[] = []
     Object.keys(params).forEach(key =>
-      paramsArray.push(`${key}=${encodeURIComponent(params[key])}`),
+      paramsArray.push(`${key}=${encodeURIComponent(params[key])}`)
     )
+
     if (urlWithPrefix.search(/\?/) === -1)
       urlWithPrefix += `?${paramsArray.join('&')}`
-
     else
       urlWithPrefix += `&${paramsArray.join('&')}`
 
@@ -274,9 +289,9 @@ const baseFetch = (url: string, fetchOptions: any, { needAllResponseContent }: I
   if (body)
     options.body = JSON.stringify(body)
 
-  // Handle timeout
+  // タイムアウト制御 + fetch実行
   return Promise.race([
-    new Promise((resolve, reject) => {
+    new Promise((_, reject) => {
       setTimeout(() => {
         reject(new Error('request timeout'))
       }, TIME_OUT)
@@ -285,39 +300,38 @@ const baseFetch = (url: string, fetchOptions: any, { needAllResponseContent }: I
       globalThis.fetch(urlWithPrefix, options)
         .then((res: any) => {
           const resClone = res.clone()
-          // Error handler
+
           if (!/^(2|3)\d{2}$/.test(res.status)) {
             try {
               const bodyJson = res.json()
               switch (res.status) {
-                case 401: {
+                case 401:
                   Toast.notify({ type: 'error', message: 'Invalid token' })
                   return
-                }
                 default:
-                  // eslint-disable-next-line no-new
                   new Promise(() => {
                     bodyJson.then((data: any) => {
                       Toast.notify({ type: 'error', message: data.message })
                     })
                   })
               }
-            }
-            catch (e) {
+            } catch (e) {
               Toast.notify({ type: 'error', message: `${e}` })
             }
 
             return Promise.reject(resClone)
           }
 
-          // handle delete api. Delete api not return content.
+          // 204 No Content の場合
           if (res.status === 204) {
             resolve({ result: 'success' })
             return
           }
 
-          // return data
-          const data = options.headers.get('Content-type') === ContentType.download ? res.blob() : res.json()
+          // 通常のレスポンス処理
+          const data = options.headers.get('Content-type') === ContentType.download
+            ? res.blob()
+            : res.json()
 
           resolve(needAllResponseContent ? resClone : data)
         })
