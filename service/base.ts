@@ -264,7 +264,7 @@ const baseFetch = (
 ) => {
   const urlPrefix = API_PREFIX
   const urlParams = new URLSearchParams(window.location.search)
-  const token = urlParams.get("token")
+  const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJhOWQ4MWNkYi0xNzUzLTQ5MWMtOTg4OS1kNGY2MWFlOGJjMTIiLCJzdWIiOiJXZWIgQVBJIFBhc3Nwb3J0IiwiYXBwX2lkIjoiYTlkODFjZGItMTc1My00OTFjLTk4ODktZDRmNjFhZThiYzEyIiwiYXBwX2NvZGUiOiI2aVpPa2E1Q1BHS3FGYXpaIiwiZW5kX3VzZXJfaWQiOiJjZWU4NWU5OC04ZTg5LTQ1YTYtYjUxNC01OWFmM2RjYzE1MjgifQ.7iBVzVRZDP7n0bNARA64INsxZX8TgoL5dpyjYilIg8A"
   console.log("test:::" + token)
 
   // === 統合された headers の構築 ===
