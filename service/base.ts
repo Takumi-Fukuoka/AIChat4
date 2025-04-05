@@ -257,88 +257,113 @@ const handleStream = (
   read()
 }
 
-const baseFetch = (url: string, fetchOptions: any, { needAllResponseContent }: IOtherOptions) => {
-  const options = Object.assign({}, baseOptions, fetchOptions)
-
+const baseFetch = (
+  url: string,
+  fetchOptions: any,
+  { needAllResponseContent }: IOtherOptions
+) => {
   const urlPrefix = API_PREFIX
   const urlParams = new URLSearchParams(window.location.search)
   const token = urlParams.get("token")
   console.log("test:::" + token)
-  const headers = new Headers(fetchOptions.headers || {})
-  headers.set('Content-Type', ContentType.json)
-  if (token) {
-    headers.set('Authorization', `Bearer ${token}`)
-  }
-  let urlWithPrefix = `${urlPrefix}${url.startsWith('/') ? url : `/${url}`}`
 
+  // === 統合された headers の構築 ===
+  const headers = new Headers()
+
+  // baseOptions.headers の反映
+  if (baseOptions.headers instanceof Headers) {
+    baseOptions.headers.forEach((value, key) => headers.set(key, value))
+  }
+
+  // fetchOptions.headers の反映
+  if (typeof fetchOptions.headers === "object") {
+    Object.entries(fetchOptions.headers as Record<string, unknown>).forEach(
+      ([key, value]: [string, unknown]) => {
+        if (typeof value === "string") {
+          headers.set(key, value)
+        }
+      }
+    )
+  }
+
+  // 必須ヘッダー
+  headers.set("Content-Type", ContentType.json)
+  if (token) {
+    headers.set("Authorization", `Bearer ${token}`)
+  }
+
+  // 最終オプション統合
+  const options = Object.assign({}, baseOptions, fetchOptions, { headers })
+
+  // URL構築
+  let urlWithPrefix = `${urlPrefix}${url.startsWith("/") ? url : `/${url}`}`
   const { method, params, body } = options
-  // handle query
-  if (method === 'GET' && params) {
+
+  if (method === "GET" && params) {
     const paramsArray: string[] = []
-    Object.keys(params).forEach(key =>
-      paramsArray.push(`${key}=${encodeURIComponent(params[key])}`),
+    Object.keys(params).forEach((key) =>
+      paramsArray.push(`${key}=${encodeURIComponent(params[key])}`)
     )
     if (urlWithPrefix.search(/\?/) === -1)
-      urlWithPrefix += `?${paramsArray.join('&')}`
-
-    else
-      urlWithPrefix += `&${paramsArray.join('&')}`
+      urlWithPrefix += `?${paramsArray.join("&")}`
+    else urlWithPrefix += `&${paramsArray.join("&")}`
 
     delete options.params
   }
 
-  if (body)
-    options.body = JSON.stringify(body)
+  if (body) options.body = JSON.stringify(body)
 
-  // Handle timeout
+  // タイムアウト付き fetch 実行
   return Promise.race([
-    new Promise((resolve, reject) => {
+    new Promise((_, reject) => {
       setTimeout(() => {
-        reject(new Error('request timeout'))
+        reject(new Error("request timeout"))
       }, TIME_OUT)
     }),
     new Promise((resolve, reject) => {
       globalThis.fetch(urlWithPrefix, options)
         .then((res: any) => {
           const resClone = res.clone()
-          // Error handler
+
           if (!/^(2|3)\d{2}$/.test(res.status)) {
             try {
               const bodyJson = res.json()
               switch (res.status) {
                 case 401: {
-                  Toast.notify({ type: 'error', message: 'Invalid token' })
+                  Toast.notify({ type: "error", message: "Invalid token" })
                   return
                 }
                 default:
-                  // eslint-disable-next-line no-new
                   new Promise(() => {
                     bodyJson.then((data: any) => {
-                      Toast.notify({ type: 'error', message: data.message })
+                      Toast.notify({
+                        type: "error",
+                        message: data.message,
+                      })
                     })
                   })
               }
-            }
-            catch (e) {
-              Toast.notify({ type: 'error', message: `${e}` })
+            } catch (e) {
+              Toast.notify({ type: "error", message: `${e}` })
             }
 
             return Promise.reject(resClone)
           }
 
-          // handle delete api. Delete api not return content.
           if (res.status === 204) {
-            resolve({ result: 'success' })
+            resolve({ result: "success" })
             return
           }
 
-          // return data
-          const data = options.headers.get('Content-type') === ContentType.download ? res.blob() : res.json()
+          const data =
+            options.headers.get("Content-type") === ContentType.download
+              ? res.blob()
+              : res.json()
 
           resolve(needAllResponseContent ? resClone : data)
         })
         .catch((err) => {
-          Toast.notify({ type: 'error', message: err })
+          Toast.notify({ type: "error", message: err })
           reject(err)
         })
     }),
